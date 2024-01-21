@@ -1,6 +1,6 @@
-import { SmartContract, state, State, method, UInt32, UInt64, Reducer, Field, PublicKey, Struct } from 'o1js';
+import { SmartContract, state, State, method, UInt32, Reducer, Field, Struct, Signature, PublicKey, UInt64 } from 'o1js';
 import { PackedUInt32Factory, MultiPackedStringFactory } from 'o1js-pack';
-import { MWT } from "mina-web-tokens";
+import { MWT, MWTData } from "mina-web-tokens";
 
 export class IpfsHash extends MultiPackedStringFactory(2) { }
 export class PartialBallot extends PackedUInt32Factory() { }
@@ -14,7 +14,16 @@ export class VoteAction extends Struct({
   ballot: Ballot
 }) { }
 
-export class BaseTokenElection extends SmartContract {
+export class AuthShape extends Struct({
+  iss: PublicKey,
+  sub: PublicKey,
+  exp: UInt64,
+  scope: Field
+}) {}
+
+export class PollWithMwtAuth extends SmartContract {
+  NUM_VOTES_ALLOWED = 1;
+
   @state(IpfsHash) electionDetailsIpfs = State<IpfsHash>();
   @state(Ballot) ballot = State<Ballot>();
   @state(Field) actionState = State<Field>();
@@ -33,14 +42,6 @@ export class BaseTokenElection extends SmartContract {
   }
 
   @method
-  faucet(toAddress: PublicKey) {
-    this.token.mint({
-      address: toAddress,
-      amount: 50_000
-    });
-  }
-
-  @method
   setElectionDetails(electionDetailsIpfs: IpfsHash) {
     this.electionDetailsIpfs.getAndRequireEquals();
     this.electionDetailsIpfs.requireEquals(IpfsHash.fromString(''));
@@ -48,7 +49,12 @@ export class BaseTokenElection extends SmartContract {
   }
 
   @method
-  castVote(vote: Ballot, amount: UInt32) {
+  castVote(vote: Ballot, mwt: Signature, authData: AuthShape) {
+    const networkTime = this.network.timestamp.getAndRequireEquals();
+    MWT.verify(mwt, authData).assertTrue();
+    authData.exp.assertGreaterThan(networkTime);
+    authData.scope.assertGreaterThan(0);
+
     const unpackedVote1 = PartialBallot.unpack(vote.partial1);
     const unpackedVote2 = PartialBallot.unpack(vote.partial2);
 
@@ -59,11 +65,8 @@ export class BaseTokenElection extends SmartContract {
     for (let i = 0; i < PartialBallot.l; i++) {
       voteSum = voteSum.add(unpackedVote2[i]);
     }
-    voteSum.assertEquals(amount); // sum of votes must equal asserted amount (can vote for multiple options)
-    this.token.burn({
-      address: this.sender,
-      amount: UInt64.from(amount)
-    });
+    voteSum.assertEquals(UInt32.from(this.NUM_VOTES_ALLOWED)); // 
+
     this.reducer.dispatch({
       ballot: vote
     });

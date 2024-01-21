@@ -39,7 +39,7 @@
     "o1js": "0.15.*"
   },
   "dependencies": {
-    "mina-web-tokens": "^0.1.0",
+    "mina-web-tokens": "^0.1.1",
     "o1js-pack": "^0.5.0"
   }
 }

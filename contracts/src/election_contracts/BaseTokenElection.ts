@@ -1,17 +1,28 @@
-import { SmartContract, state, State, method, UInt32, UInt64, Reducer, Field, PublicKey, Struct } from 'o1js';
+import {
+  SmartContract,
+  state,
+  State,
+  method,
+  UInt32,
+  UInt64,
+  Reducer,
+  Field,
+  PublicKey,
+  Struct,
+} from 'o1js';
 import { PackedUInt32Factory, MultiPackedStringFactory } from 'o1js-pack';
 
-export class IpfsHash extends MultiPackedStringFactory(2) { }
-export class PartialBallot extends PackedUInt32Factory() { }
+export class IpfsHash extends MultiPackedStringFactory(2) {}
+export class PartialBallot extends PackedUInt32Factory() {}
 
 export class Ballot extends Struct({
   partial1: Field,
-  partial2: Field
-}) { }
+  partial2: Field,
+}) {}
 
 export class VoteAction extends Struct({
-  ballot: Ballot
-}) { }
+  ballot: Ballot,
+}) {}
 
 export class BaseTokenElection extends SmartContract {
   @state(IpfsHash) electionDetailsIpfs = State<IpfsHash>();
@@ -25,7 +36,7 @@ export class BaseTokenElection extends SmartContract {
     this.electionDetailsIpfs.set(IpfsHash.fromString(''));
     this.ballot.set({
       partial1: PartialBallot.fromBigInts([0n, 0n, 0n, 0n, 0n, 0n, 0n]).packed,
-      partial2: PartialBallot.fromBigInts([0n, 0n, 0n, 0n, 0n, 0n, 0n]).packed
+      partial2: PartialBallot.fromBigInts([0n, 0n, 0n, 0n, 0n, 0n, 0n]).packed,
     });
     this.actionState.set(Reducer.initialActionState);
     this.account.delegate.set(this.sender);
@@ -35,7 +46,7 @@ export class BaseTokenElection extends SmartContract {
   faucet(toAddress: PublicKey) {
     this.token.mint({
       address: toAddress,
-      amount: 50_000
+      amount: 50_000,
     });
   }
 
@@ -61,10 +72,10 @@ export class BaseTokenElection extends SmartContract {
     voteSum.assertEquals(amount); // sum of votes must equal asserted amount (can vote for multiple options)
     this.token.burn({
       address: this.sender,
-      amount: UInt64.from(amount)
+      amount: UInt64.from(amount),
     });
     this.reducer.dispatch({
-      ballot: vote
+      ballot: vote,
     });
   }
 
@@ -73,34 +84,36 @@ export class BaseTokenElection extends SmartContract {
     const ballot = this.ballot.getAndRequireEquals();
     const actionState = this.actionState.getAndRequireEquals();
 
-    let pendingActions = this.reducer.getActions({
-      fromActionState: actionState,
-    }).slice(0, 3); // at most, reduce 3 actions
+    let pendingActions = this.reducer
+      .getActions({
+        fromActionState: actionState,
+      })
+      .slice(0, 3); // at most, reduce 3 actions
 
-    let { state: newVotes, actionState: newActionState } =
-      this.reducer.reduce(
-        pendingActions,
-        Ballot,
-        (state: Ballot, _action: VoteAction) => {
-          const unpackedState1 = PartialBallot.unpack(state.partial1);
-          const unpackedState2 = PartialBallot.unpack(state.partial2);
-          const unpackedAction1 = PartialBallot.unpack(_action.ballot.partial1);
-          const unpackedAction2 = PartialBallot.unpack(_action.ballot.partial2);
-          for (let i = 0; i < PartialBallot.l; i++) {
-            unpackedState1[i] = unpackedState1[i].add(unpackedAction1[i])
-          }
-          for (let i = 0; i < PartialBallot.l; i++) {
-            unpackedState2[i] = unpackedState2[i].add(unpackedAction2[i])
-          }
-          return {
-            partial1: PartialBallot.fromUInt32s(unpackedState1).packed,
-            partial2: PartialBallot.fromUInt32s(unpackedState2).packed
-          }
-        },
-        {
-          state: ballot, actionState: actionState
+    let { state: newVotes, actionState: newActionState } = this.reducer.reduce(
+      pendingActions,
+      Ballot,
+      (state: Ballot, _action: VoteAction) => {
+        const unpackedState1 = PartialBallot.unpack(state.partial1);
+        const unpackedState2 = PartialBallot.unpack(state.partial2);
+        const unpackedAction1 = PartialBallot.unpack(_action.ballot.partial1);
+        const unpackedAction2 = PartialBallot.unpack(_action.ballot.partial2);
+        for (let i = 0; i < PartialBallot.l; i++) {
+          unpackedState1[i] = unpackedState1[i].add(unpackedAction1[i]);
         }
-      );
+        for (let i = 0; i < PartialBallot.l; i++) {
+          unpackedState2[i] = unpackedState2[i].add(unpackedAction2[i]);
+        }
+        return {
+          partial1: PartialBallot.fromUInt32s(unpackedState1).packed,
+          partial2: PartialBallot.fromUInt32s(unpackedState2).packed,
+        };
+      },
+      {
+        state: ballot,
+        actionState: actionState,
+      }
+    );
 
     this.ballot.set(newVotes);
     this.actionState.set(newActionState);

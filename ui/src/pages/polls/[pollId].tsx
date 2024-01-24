@@ -3,9 +3,12 @@ import Link from 'next/link';
 import { useRouter } from "next/router";
 
 import styles from '../../styles/Home.module.css';
+import { useEffect } from 'react';
+import useDeployMap from '@/hooks/useDeployMAP';
 
 const PollDetails = () => {
   const router = useRouter();
+  useDeployMap();
   const {
     query: { pollId },
   } = router;

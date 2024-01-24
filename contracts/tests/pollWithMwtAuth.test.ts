@@ -59,14 +59,12 @@ describe('PollWithMwtAuth', () => {
     });
     await tx.prove();
     await tx.sign([senderKey]).send();
-    await new Promise(r => setTimeout(r, 60_000));
 
     tx =await Mina.transaction({ sender, fee: 100_000_000 }, () => {
       zkapp.reduceVotes();
     });
     await tx.prove();
     await tx.sign([senderKey]).send();
-    await new Promise(r => setTimeout(r, 60_000));
     
     const stateValue = zkapp.ballot.get();
     const statePb1 = (new PartialBallot(stateValue.partial1)).toBigInts();

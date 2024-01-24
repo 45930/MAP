@@ -1,18 +1,22 @@
-import { AccountUpdate, Mina, PrivateKey, PublicKey, SmartContract } from 'o1js';
+import { AccountUpdate, Mina, PrivateKey, PublicKey, SmartContract, Lightnet } from 'o1js';
 
-export function setupLocalBlockchainAndAccounts(proofsEnabled = false) {
-  let Local = Mina.LocalBlockchain({ proofsEnabled });
-  Mina.setActiveInstance(Local);
+export async function setupLocalBlockchainAndAccounts(proofsEnabled = false) {
+  const network = Mina.Network({
+    mina: 'http://localhost:8080/graphql',
+    archive: 'http://localhost:8282',
+    lightnetAccountManager: 'http://localhost:8181',
+  });
+  Mina.setActiveInstance(network);
   
   const zkAppPrivateKey = PrivateKey.random();
   const zkAppAddress = zkAppPrivateKey.toPublicKey();
   const userKey = PrivateKey.random();
   const userAddress = userKey.toPublicKey();
 
-  const sender = Local.testAccounts[0].publicKey;
-  const senderKey = Local.testAccounts[0].privateKey;
+  const senderKey = (await Lightnet.acquireKeyPair()).privateKey;
+  const sender = senderKey.toPublicKey();
 
-  const fundedAccounts = Local.testAccounts.slice(1);
+  await Mina.faucet(sender);
 
   return {
     zkAppPrivateKey,
@@ -20,8 +24,7 @@ export function setupLocalBlockchainAndAccounts(proofsEnabled = false) {
     userKey,
     userAddress,
     sender,
-    senderKey,
-    fundedAccounts
+    senderKey
   }
 }
 
@@ -32,11 +35,12 @@ export async function deploy(
   senderKey: PrivateKey,
   deployArgs: any = {}
 ) {
-  let tx = await Mina.transaction(sender, () => {
+  let tx = await Mina.transaction({ sender, fee: 100_000_000 }, () => {
     AccountUpdate.fundNewAccount(sender);
     zkApp.deploy(deployArgs);
   });
   await tx.prove();
   // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
   await tx.sign([zkAppPrivateKey, senderKey]).send();
+  await new Promise(r => setTimeout(r, 60_000));
 }

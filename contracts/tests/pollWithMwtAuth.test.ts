@@ -1,21 +1,38 @@
-import { Field, Mina, UInt64 } from "o1js";
+import { Field, Mina, UInt64, Lightnet, PrivateKey, PublicKey } from "o1js";
 import { Ballot, PartialBallot, PollWithMwtAuth } from "../src/election_contracts/PollWithMwtAuth.js"
 import { deploy, setupLocalBlockchainAndAccounts } from "./testUtils.js"
 import { MWT } from "mina-web-tokens";
 
-describe('PollWithMwtAuth',  () => {
-  let {
-    zkAppPrivateKey,
-    zkAppAddress,
-    userKey,
-    userAddress,
-    sender,
-    senderKey,
-    fundedAccounts
-  } = setupLocalBlockchainAndAccounts();
+describe('PollWithMwtAuth', () => {
+  let
+    zkAppPrivateKey: PrivateKey,
+    zkAppAddress: PublicKey,
+    userKey: PrivateKey,
+    userAddress: PublicKey,
+    sender: PublicKey,
+    senderKey: PrivateKey
+  
   let zkapp: PollWithMwtAuth;
 
-  beforeEach(() => {
+  beforeAll(async () => {
+    const d = await setupLocalBlockchainAndAccounts();
+    zkAppPrivateKey = d.zkAppPrivateKey;
+    zkAppAddress = d.zkAppAddress;
+    userKey = d.userKey;
+    userAddress = d.userAddress;
+    sender = d.sender;
+    senderKey = d.senderKey;
+    await PollWithMwtAuth.compile();
+  });
+
+  beforeEach(async () => {
+    const d = await setupLocalBlockchainAndAccounts();
+    zkAppPrivateKey = d.zkAppPrivateKey;
+    zkAppAddress = d.zkAppAddress;
+    userKey = d.userKey;
+    userAddress = d.userAddress;
+    sender = d.sender;
+    senderKey = d.senderKey;
     zkapp = new PollWithMwtAuth(zkAppAddress);
   });
 
@@ -37,17 +54,19 @@ describe('PollWithMwtAuth',  () => {
     };
     
     const mwt = new MWT(tokenData).sign(userKey);
-    let tx = await Mina.transaction(sender, () => {
+    let tx = await Mina.transaction({ sender, fee: 100_000_000 }, () => {
       zkapp.castVote(ballot, mwt, tokenData);
     });
     await tx.prove();
     await tx.sign([senderKey]).send();
+    await new Promise(r => setTimeout(r, 60_000));
 
-    tx = await Mina.transaction(sender, () => {
+    tx =await Mina.transaction({ sender, fee: 100_000_000 }, () => {
       zkapp.reduceVotes();
     });
     await tx.prove();
     await tx.sign([senderKey]).send();
+    await new Promise(r => setTimeout(r, 60_000));
     
     const stateValue = zkapp.ballot.get();
     const statePb1 = (new PartialBallot(stateValue.partial1)).toBigInts();

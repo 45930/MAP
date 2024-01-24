@@ -1,4 +1,13 @@
 {
   "version": 1,
-  "deployAliases": {}
+  "deployAliases": {
+    "lightnet": {
+      "url": "http://localhost:8080/graphql",
+      "keyPath": "keys/lightnet.json",
+      "feepayerKeyPath": "/Users/cobydurling/.cache/zkapp-cli/keys/local-fee-payer.json",
+      "feepayerAlias": "local-fee-payer",
+      "fee": "0.1",
+      "smartContract": "PollWithMwtAuth"
+    }
+  }
 }

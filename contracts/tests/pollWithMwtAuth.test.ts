@@ -1,5 +1,5 @@
 import { Field, Mina, UInt64, Lightnet, PrivateKey, PublicKey } from "o1js";
-import { Ballot, PartialBallot, PollWithMwtAuth } from "../src/election_contracts/PollWithMwtAuth.js"
+import { Ballot, PartialBallot, PollWithMwtAuth } from "../src/PollWithMwtAuth.js"
 import { deploy, setupLocalBlockchainAndAccounts } from "./testUtils.js"
 import { MWT } from "mina-web-tokens";
 

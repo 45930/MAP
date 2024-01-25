@@ -4,7 +4,7 @@ export default function useDeployMap() {
   useEffect(() => {
     (async () => {
       const { AccountUpdate, Mina, PrivateKey} = await import('o1js');
-      const { PollWithMwtAuth } = await import("../../../contracts/build/src/election_contracts/PollWithMwtAuth")
+      const { PollWithMwtAuth } = await import("../../../contracts/src/PollWithMwtAuth.js")
       
       const Local = Mina.LocalBlockchain();
       Mina.setActiveInstance(Local);

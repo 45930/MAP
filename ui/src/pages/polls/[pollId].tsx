@@ -3,15 +3,17 @@ import Link from 'next/link';
 import { useRouter } from "next/router";
 
 import styles from '../../styles/Home.module.css';
-import { useEffect } from 'react';
-import useDeployMap from '@/hooks/useDeployMAP';
+import { useContext } from 'react';
+import { ZkappStore } from '@/hooks';
+import { useStore } from '@tanstack/react-store';
 
 const PollDetails = () => {
   const router = useRouter();
-  useDeployMap();
+  const zkappStore = useStore(ZkappStore);
   const {
     query: { pollId },
   } = router;
+  const appState = zkappStore.mina.getAccount(zkappStore.instance.address).zkapp?.appState;
   return(
     <>
       <Head>
@@ -22,6 +24,7 @@ const PollDetails = () => {
       <main className={styles.main}>
         <Link href="/"><h2>Home</h2></Link>
         <div>This is poll {pollId}</div>
+        <div>Poll deployed at: {zkappStore.address}, with state: {appState?.toString()}</div>
       </main>
     </>
   )

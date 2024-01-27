@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import ZkappStore from './ZkAppStore';
 import { useStore } from '@tanstack/react-store';
 
-export default function useMAPWorker() {
+export default function useLoad() {
   const zkappStore = useStore(ZkappStore);
   useEffect(() => {
     async function timeout(seconds: number): Promise<void> {
@@ -26,24 +26,9 @@ export default function useMAPWorker() {
         await zkappWorkerClient.setActiveInstanceToLocal();
 
         const mina = (window as any).mina;
-
-        // if (mina == null) {
-        //   setState({ ...state, hasWallet: false });
-        //   return;
-        // }
-
-        // const publicKeyBase58: string = (await mina.requestAccounts())[0];
-        // const publicKey = PublicKey.fromBase58(publicKeyBase58);
-
-        // console.log(`Using key:${publicKey.toBase58()}`);
-
-        // console.log('Checking if fee payer account exists...');
-
-        // const res = await zkappWorkerClient.fetchAccount({
-        //   publicKey: publicKey!
-        // });
-        // const accountExists = res.error == null;
+        zkappStore.worker = zkappWorkerClient;
       }
     })();
+    
   }, [zkappStore]);
 }

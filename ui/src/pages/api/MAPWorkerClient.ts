@@ -52,6 +52,11 @@ export default class MAPWorkerClient {
     return result;
   }
 
+  getAppState() {
+    const result = this._call('getAppState', {});
+    return result;
+  }
+
   // ---------------------------------------------------------------------------------------
 
   worker: Worker;

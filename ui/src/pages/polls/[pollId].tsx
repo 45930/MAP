@@ -25,6 +25,7 @@ const PollDetails = () => {
       <main className={styles.main}>
         <Link href="/"><h2>Home</h2></Link>
         <div>This is poll {pollId}</div>
+        <div>Current poll state: {zkappStore.worker ? zkappStore.worker.getAppState() : ''}</div>
       </main>
     </>
   )

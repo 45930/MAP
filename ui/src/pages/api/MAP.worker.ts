@@ -4,7 +4,7 @@ type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
 // ---------------------------------------------------------------------------------------
 
-import type { PollWithMwtAuth } from '../../../../contracts/src/PollWithMwtAuth';
+import { PollWithMwtAuth } from '../../../../contracts/src/PollWithMwtAuth';
 
 const state = {
   PollWithMwtAuth: null as null | typeof PollWithMwtAuth,
@@ -48,6 +48,11 @@ const functions = {
   getTransactionJSON: async (args: {}) => {
     return state.transaction!.toJSON();
   },
+  getAppState: async (args: { publicKey58: string }) => {
+    const publicKey = PublicKey.fromBase58(args.publicKey58);
+    const zkapp = new PollWithMwtAuth(publicKey);
+    return zkapp.ballot;
+  }
 };
 
 // ---------------------------------------------------------------------------------------

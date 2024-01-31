@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Mina, PublicKey, fetchAccount } from 'o1js';
+	import { Mina, PublicKey, fetchAccount, Field } from 'o1js';
 	import { onMount } from 'svelte';
-	import { Poll } from 'voting-playground-contracts';
+	import { Ballot, PartialBallot, Poll } from 'voting-playground-contracts';
 
 	let poll: Poll;
 
@@ -15,8 +15,11 @@
 		const a = await fetchAccount({
 			publicKey: PublicKey.fromBase58(import.meta.env.VITE_ZKAPP_PUBLIC_KEY)
 		});
-		console.log(a.account?.zkapp?.appState);
-		await Poll.compile();
+		const appState = a.account?.zkapp?.appState;
+		const ballot = new Ballot({
+			partial1: Field(appState![2]),
+			partial2: Field(appState![3])
+		});
 		poll = new Poll(PublicKey.fromBase58(import.meta.env.VITE_ZKAPP_PUBLIC_KEY));
 		console.log(poll.ballot.toString());
 		console.log(poll.electionDetailsIpfs.toString());

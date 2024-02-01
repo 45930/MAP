@@ -2,27 +2,31 @@
 	import { Mina, PublicKey, fetchAccount, Field } from 'o1js';
 	import { onMount } from 'svelte';
 	import { Ballot, PartialBallot, Poll } from 'voting-playground-contracts';
+	import type { IPoll } from '../types';
 
-	let poll: Poll;
+	let poll: IPoll;
 
 	onMount(async () => {
-		const network = Mina.Network({
-			mina: 'http://localhost:8080/graphql',
-			archive: 'http://localhost:8282',
-			lightnetAccountManager: 'http://localhost:8181'
-		});
-		Mina.setActiveInstance(network);
-		const a = await fetchAccount({
-			publicKey: PublicKey.fromBase58(import.meta.env.VITE_ZKAPP_PUBLIC_KEY)
-		});
-		const appState = a.account?.zkapp?.appState;
-		const ballot = new Ballot({
-			partial1: Field(appState![2]),
-			partial2: Field(appState![3])
-		});
-		poll = new Poll(PublicKey.fromBase58(import.meta.env.VITE_ZKAPP_PUBLIC_KEY));
-		console.log(poll.ballot.toString());
-		console.log(poll.electionDetailsIpfs.toString());
+		// 	const network = Mina.Network({
+		// 		mina: 'http://localhost:8080/graphql',
+		// 		archive: 'http://localhost:8282',
+		// 		lightnetAccountManager: 'http://localhost:8181'
+		// 	});
+		// 	Mina.setActiveInstance(network);
+		// 	const a = await fetchAccount({
+		// 		publicKey: PublicKey.fromBase58(import.meta.env.VITE_ZKAPP_PUBLIC_KEY)
+		// 	});
+		// 	const appState = a.account?.zkapp?.appState;
+		// 	const ballot1 = Field(appState![2]);
+		// 	const ballot2 = Field(appState![3]);
+		// 	const ballot =
+		// 	poll = new Poll(PublicKey.fromBase58(import.meta.env.VITE_ZKAPP_PUBLIC_KEY));
+		// 	console.log(poll.ballot.toString());
+		// 	console.log(poll.electionDetailsIpfs.toString());
+		poll = {
+			prompt: 'What is your favorite Mina Foundation developer program?',
+			optionLabels: ['Core Grants', 'Zk Ignite', 'Mina Navigators']
+		};
 	});
 </script>
 
@@ -37,10 +41,17 @@
 	<h2>Mina action polls is a simple vote tally applicatio built on Mina.</h2>
 
 	<div>
-		<h2>Active Polls</h2>
 		{#if poll}
 			<div>
-				{poll.ballot.toString()}, {poll.electionDetailsIpfs.toString()}
+				<h2>{poll.prompt}</h2>
+				<div class="block">
+					{#each poll.optionLabels as label}
+						<div>
+							<label>{label}</label>
+							<input />
+						</div>
+					{/each}
+				</div>
 			</div>
 		{/if}
 	</div>

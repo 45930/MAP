@@ -3,8 +3,10 @@
 	import { onMount } from 'svelte';
 	import { Ballot, PartialBallot, Poll } from 'voting-playground-contracts';
 	import type { IPoll } from '../types';
+	import { getIpfsContent } from './server/ipfsClient';
 
 	let poll: IPoll;
+	let content = '';
 
 	onMount(async () => {
 		// 	const network = Mina.Network({
@@ -27,6 +29,9 @@
 			prompt: 'What is your favorite Mina Foundation developer program?',
 			optionLabels: ['Core Grants', 'Zk Ignite', 'Mina Navigators']
 		};
+
+		const cid = 'QmPKD74Pfc6aH5Suh1EXqjbfKBYDs5QVARxmpqsNKMKxe3';
+		content = await getIpfsContent(cid);
 	});
 </script>
 
@@ -44,6 +49,9 @@
 		{#if poll}
 			<div>
 				<h2>{poll.prompt}</h2>
+				<div>
+					{content}
+				</div>
 				<div class="block">
 					{#each poll.optionLabels as label}
 						<div>

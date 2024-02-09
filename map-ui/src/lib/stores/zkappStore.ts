@@ -10,8 +10,7 @@ const network = Mina.Network({
 });
 Mina.setActiveInstance(network);
 
-export const minaStore = writable(Mina);
+// const Network = Mina.Network('https://proxy.berkeley.minaexplorer.com/graphql');
+// Mina.setActiveInstance(Network);
 
-await fetchAccount({publicKey: PublicKey.fromBase58(import.meta.env.VITE_ZKAPP_PUBLIC_KEY) });
-const initPoll = new Poll(PublicKey.fromBase58(import.meta.env.VITE_ZKAPP_PUBLIC_KEY));
-export const pollStore = writable<Poll[]>([initPoll]);
+export const minaStore = writable(Mina);

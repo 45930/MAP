@@ -23,8 +23,8 @@ export default defineConfig({
 		},
 	},
 	plugins: [
+		o1jsHeaders(),
 		sveltekit(),
-		o1jsHeaders()
 	],
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}']

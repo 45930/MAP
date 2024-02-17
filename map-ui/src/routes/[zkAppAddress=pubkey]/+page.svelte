@@ -1,19 +1,33 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { getIpfsHash } from '../server/pollWorker';
-	import { getIpfsContent } from '../server/ipfsClient';
+	import ZkappClient from '../../server/zkapp/pollClient';
+	import { getIpfsContent } from '../../server/ipfsClient';
 
 	let zkAppAddress = $page.params.zkAppAddress;
 	let ipfsHash = '';
 	let content = '';
 
-	onMount(async () => {
-		ipfsHash = await getIpfsHash(zkAppAddress);
-		content = await getIpfsContent(ipfsHash);
+	let loading = true;
+
+	const zkClient = new ZkappClient();
+
+	onMount(() => {
+		setup();
 	});
+
+	const setup = async () => {
+		await zkClient.setupZkappInstance(zkAppAddress);
+		// ipfsHash = zkClient.getIpfsHash();
+		// content = await getIpfsContent(ipfsHash);
+		loading = false;
+	};
 </script>
 
-<div>
-	{content}
-</div>
+{#if loading}
+	<div>Loading....</div>
+{:else}
+	<div>
+		{content}
+	</div>
+{/if}

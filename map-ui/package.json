@@ -42,6 +42,6 @@
 	"dependencies": {
 		"o1js": "^0.15.3",
 		"o1js-pack": "^0.5.0",
-		"voting-playground-contracts": "0.2.1rc5"
+		"voting-playground-contracts": "0.2.1rc6"
 	}
 }

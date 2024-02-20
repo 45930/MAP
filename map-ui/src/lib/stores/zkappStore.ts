@@ -7,7 +7,10 @@ class ZkappClient {
 
 	async getStatus() {
 		const response = await fetch(`${this.apiHost}/status`);
-		return await response.json();
+		const status = await response.json();
+		this.instances = status.instances;
+		this.hasBeenSetup = status.hasBeenSetup;
+		return status;
 	}
 
 	async getIpfsHash(publicKey: string): Promise<string> {

@@ -1,4 +1,5 @@
 import express, { Express, Request, Response } from "express";
+import cors from 'cors';
 import dotenv from "dotenv";
 import ZkappClient from "./zkapp/pollClient.js";
 
@@ -7,6 +8,7 @@ dotenv.config();
 const zkappClient = new ZkappClient();
 
 const app: Express = express();
+app.use(cors());
 const port = process.env.PORT || 3000;
 
 app.get("/", (req: Request, res: Response) => {
@@ -26,11 +28,17 @@ app.get("/addInstance/", (req: Request, res: Response) => {
 app.get('/:publicKey/ipfsHash', (req: Request, res: Response) => {
   const publicKey = req.params.publicKey;
   const ipfsHash = zkappClient.getIpfsHash(publicKey);
-  res.send(ipfsHash);
+  res.send({
+    ipfsHash
+  });
 });
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
 });
 
-zkappClient.setup();
+await zkappClient.setup();
+
+await zkappClient.setupZkappInstance('');
+await zkappClient.setupZkappInstance('');
+await zkappClient.setupZkappInstance('');

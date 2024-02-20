@@ -17,9 +17,8 @@
 	});
 
 	const setup = async () => {
-		await zkClient.setupZkappInstance(zkAppAddress);
-		// ipfsHash = zkClient.getIpfsHash();
-		// content = await getIpfsContent(ipfsHash);
+		ipfsHash = await zkClient.getIpfsHash(zkAppAddress);
+		content = await getIpfsContent(ipfsHash);
 		loading = false;
 	};
 </script>

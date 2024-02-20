@@ -1,10 +1,3 @@
-/**
- * This file and pattern was lifted from https://github.com/t4top/mina-wordle-game/blob/main/ui/src/lib/zkapp/zkapp_client.ts
- *
- * TY t4top!
- *
- */
-
 import { Mina, PublicKey, fetchAccount, UInt64, PrivateKey, AccountUpdate } from 'o1js';
 import { IpfsHash, PartialBallot, Poll } from 'voting-playground-contracts';
 import { LOCAL_BLOCKCHAIN, networkConfig } from './minaConfig.js';
@@ -79,7 +72,7 @@ export default class ZkappClient {
 		if (this.hasBeenSetup) return;
 
 		this.setActiveInstance();
-		
+
 		console.log('setting up Zkapp...');
 		this.loadContract();
 		await this.compileContract();

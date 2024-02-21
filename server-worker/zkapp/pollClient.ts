@@ -90,7 +90,7 @@ export default class ZkappClient {
 			const senderKey = LOCAL_BLOCKCHAIN.testAccounts[0].privateKey;
 			const sender = senderKey.toPublicKey();
 			const zkApp = new Poll(zkAppAddress);
-			const ipfsHash = 'QmPKD74Pfc6aH5Suh1EXqjbfKBYDs5QVARxmpqsNKMKxe3';
+			const ipfsHash = 'QmSoEHyCkk2SraufioCnoM8dcaGupkV1J7oCTYwtsXABPT';
 			const packedIpfsHash = IpfsHash.fromString(ipfsHash);
 
 			let tx = await Mina.transaction({ sender, fee: 10_000_000 }, () => {

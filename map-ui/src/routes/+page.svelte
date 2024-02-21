@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import ipfsDataStore from '$lib/stores/ipfsDataStore';
 	import zkappStore from '$lib/stores/zkappStore';
 
 	let hasBeenSetup = false;
@@ -9,6 +10,12 @@
 		const status = await $zkappStore.getStatus();
 		instances = status.instnaces;
 		hasBeenSetup = status.hasBeenSetup;
+		for (const i of instances) {
+			if (!$ipfsDataStore[i]) {
+				const ipfsHash = await $zkappStore.getIpfsHash(i);
+				$ipfsDataStore[i] = ipfsHash;
+			}
+		}
 	});
 </script>
 

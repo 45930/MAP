@@ -1,5 +1,5 @@
-import { Mina, PublicKey, fetchAccount, UInt64, PrivateKey, AccountUpdate } from 'o1js';
-import { IpfsHash, PartialBallot, Poll } from 'voting-playground-contracts';
+import { Mina, PublicKey, fetchAccount, UInt64, PrivateKey, AccountUpdate, Field } from 'o1js';
+import { IpfsHash, Poll } from './Poll.js'
 import { LOCAL_BLOCKCHAIN, networkConfig } from './minaConfig.js';
 
 type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
@@ -46,17 +46,14 @@ export default class ZkappClient {
 	}
 
 	getVotes(publicKey58: string): Array<number> {
-		const votesFields = this.instnaces[publicKey58]!.ballot.get();
-		const partial1 = new PartialBallot(votesFields.partial1);
-		const partial2 = new PartialBallot(votesFields.partial2);
-		const votes = [];
-		for (const v in partial1.toBigInts()) {
-			votes.push(Number(v));
-		}
-		for (const v in partial2.toBigInts()) {
-			votes.push(Number(v));
-		}
-		return votes;
+		const option1 = this.instnaces[publicKey58]!.option1.get();
+		const option2 = this.instnaces[publicKey58]!.option2.get();
+		const option3 = this.instnaces[publicKey58]!.option3.get();
+		return [
+			Number(option1.toBigInt()),
+			Number(option2.toBigInt()),
+			Number(option3.toBigInt())
+		]
 	}
 
 	initZkappInstance(publicKey58: string) {
@@ -115,8 +112,26 @@ export default class ZkappClient {
 		console.log('done');
 	}
 
-	async createVoteTransaction() {
-		// todo
+	async createVoteTransaction(publicKey58: string, votes: Array<number>) {
+		await this.setup();
+
+		const poll = this.instnaces[publicKey58];
+
+		const senderKey = LOCAL_BLOCKCHAIN.testAccounts[0].privateKey;
+		const sender = senderKey.toPublicKey();
+
+		let vote = 0;
+		votes.forEach((v, i) => {
+			if(v === 1) {
+				vote = i + 1;
+				return
+			}
+		});
+		let tx = await Mina.transaction({ sender, fee: 10_000_000 }, () => {
+			poll.castVote(Field.from(vote));
+		});
+		await tx.prove();
+		return tx.toJSON();
 	}
 
 	async proveTransaction() {

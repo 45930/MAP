@@ -9,6 +9,8 @@ const zkappClient = new ZkappClient();
 
 const app: Express = express();
 app.use(cors());
+app.use(express.json());
+
 const port = process.env.PORT || 3000;
 
 app.get("/", (req: Request, res: Response) => {
@@ -30,6 +32,15 @@ app.get('/:publicKey/ipfsHash', (req: Request, res: Response) => {
   const ipfsHash = zkappClient.getIpfsHash(publicKey);
   res.send({
     ipfsHash
+  });
+});
+
+app.post('/:publicKey/vote', async (req: Request, res: Response) => {
+  const publicKey = req.params.publicKey;
+  const votes = req.body['votes'];
+  const tx = await zkappClient.createVoteTransaction(publicKey, votes);
+  res.send({
+    tx
   });
 });
 

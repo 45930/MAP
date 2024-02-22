@@ -13,6 +13,8 @@
 		options: Array<string>;
 	}
 
+	const formId = `form-${$page.params.zkAppAddress}`;
+	let vote: number | null = null;
 	let zkAppAddress = $page.params.zkAppAddress;
 	let ipfsHash = '';
 	let content: IIpfsPollData | undefined;
@@ -32,6 +34,17 @@
 		content = await getIpfsContent(ipfsHash);
 		loading = false;
 	};
+
+	const handleSubmit = async (e: Event) => {
+		e.preventDefault();
+		const votes = new Array(content?.options.length).fill(0);
+		if (vote != null) {
+			votes[vote] = 1;
+		}
+		const tx = await $zkappStore.vote(zkAppAddress, votes);
+		vote = null;
+		console.log(tx);
+	};
 </script>
 
 {#if loading}
@@ -48,9 +61,23 @@
 			{/each}
 		</div>
 		<div class="text-left">
-			{#each content.options as opt}
-				<div>{opt}</div>
-			{/each}
+			<form id={formId} on:submit={handleSubmit}>
+				{#each content.options as opt, idx}
+					<div>
+						<label>
+							<input
+								id={`opt-${idx}`}
+								name={`opt-${idx}`}
+								value={idx}
+								bind:group={vote}
+								type="radio"
+							/>
+							{opt}
+						</label>
+					</div>
+				{/each}
+				<button type="submit">Submit your vote!</button>
+			</form>
 		</div>
 	</div>
 {:else}

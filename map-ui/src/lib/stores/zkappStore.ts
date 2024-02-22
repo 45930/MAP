@@ -1,3 +1,4 @@
+import { method } from 'o1js';
 import { writable } from 'svelte/store';
 
 class ZkappClient {
@@ -16,6 +17,19 @@ class ZkappClient {
 	async getIpfsHash(publicKey: string): Promise<string> {
 		const response = await fetch(`${this.apiHost}/${publicKey}/ipfsHash`);
 		return (await response.json()).ipfsHash;
+	}
+
+	async vote(publicKey: string, votes: Array<number>) {
+		const resp = await fetch(`${this.apiHost}/${publicKey}/vote`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				votes
+			})
+		});
+		return await resp.json();
 	}
 
 	async sendTransaction(transactionJSON: any, transactionFee: number) {

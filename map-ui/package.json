@@ -40,8 +40,8 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"o1js": "^0.15.3",
-		"o1js-pack": "^0.5.0",
-		"voting-playground-contracts": "0.2.1rc6"
+		"o1js": "0.16.1",
+    "o1js-pack": "0.5.3",
+    "voting-playground-contracts": "0.2.3"
 	}
 }

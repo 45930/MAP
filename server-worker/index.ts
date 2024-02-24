@@ -37,8 +37,10 @@ app.get('/:publicKey/ipfsHash', (req: Request, res: Response) => {
 
 app.post('/:publicKey/vote', async (req: Request, res: Response) => {
   const publicKey = req.params.publicKey;
+  const sender58 = req.body['sender'];
   const votes = req.body['votes'];
-  const tx = await zkappClient.createVoteTransaction(publicKey, votes);
+  console.log(sender58)
+  const tx = await zkappClient.createVoteTransaction(sender58, publicKey, votes);
   res.send({
     tx
   });
@@ -50,6 +52,4 @@ app.listen(port, () => {
 
 await zkappClient.setup();
 
-await zkappClient.setupZkappInstance('');
-await zkappClient.setupZkappInstance('');
-await zkappClient.setupZkappInstance('');
+await zkappClient.setupZkappInstance('B62qqy4mWSPJ5gDQDC4HADZYdQ3yCTxZDS9SAib4L7eTqakBoktmq1q');

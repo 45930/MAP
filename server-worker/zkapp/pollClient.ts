@@ -4,7 +4,7 @@ import { LOCAL_BLOCKCHAIN, networkConfig } from './minaConfig.js';
 
 type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
-const useLocalBlockchain = true;
+const useLocalBlockchain = false;
 
 export default class ZkappClient {
 	setActiveInstance() {
@@ -40,15 +40,15 @@ export default class ZkappClient {
 	}
 
 	getIpfsHash(publicKey58: string): string {
-		const ipfsHashFields = this.instnaces[publicKey58]!.electionDetailsIpfs.get();
+		const ipfsHashFields = this.instances[publicKey58]!.electionDetailsIpfs.get();
 		const ipfsHashString = ipfsHashFields.toString();
 		return ipfsHashString;
 	}
 
 	getVotes(publicKey58: string): Array<number> {
-		const option1 = this.instnaces[publicKey58]!.option1.get();
-		const option2 = this.instnaces[publicKey58]!.option2.get();
-		const option3 = this.instnaces[publicKey58]!.option3.get();
+		const option1 = this.instances[publicKey58]!.option1.get();
+		const option2 = this.instances[publicKey58]!.option2.get();
+		const option3 = this.instances[publicKey58]!.option3.get();
 		return [
 			Number(option1.toBigInt()),
 			Number(option2.toBigInt()),
@@ -58,9 +58,9 @@ export default class ZkappClient {
 
 	initZkappInstance(publicKey58: string) {
 		console.log('init instance...');
-		if(!Object.hasOwn(this.instnaces, publicKey58)) {
+		if(!Object.hasOwn(this.instances, publicKey58)) {
 			const publicKey = this.publicKeyFromBase58(publicKey58);
-			this.instnaces[publicKey58] = new this.Poll!(publicKey);
+			this.instances[publicKey58] = new this.Poll!(publicKey);
 		}
 		console.log('done');
 	}
@@ -106,19 +106,19 @@ export default class ZkappClient {
 			await tx.sign([senderKey]).send();
 			this.initZkappInstance(zkAppAddress.toBase58());
 		} else {
+			await fetchAccount({publicKey: publicKey58});
 			this.initZkappInstance(publicKey58);
 		}
 		this.hasBeenSetup = true;
 		console.log('done');
 	}
 
-	async createVoteTransaction(publicKey58: string, votes: Array<number>) {
+	async createVoteTransaction(sender58: string, publicKey58: string, votes: Array<number>) {
 		await this.setup();
 
-		const poll = this.instnaces[publicKey58];
+		const poll = this.instances[publicKey58];
 
-		const senderKey = LOCAL_BLOCKCHAIN.testAccounts[0].privateKey;
-		const sender = senderKey.toPublicKey();
+		const sender = PublicKey.fromBase58(sender58);
 
 		let vote = 0;
 		votes.forEach((v, i) => {
@@ -127,11 +127,15 @@ export default class ZkappClient {
 				return
 			}
 		});
-		let tx = await Mina.transaction({ sender, fee: 10_000_000 }, () => {
-			poll.castVote(Field.from(vote));
-		});
-		await tx.prove();
-		return tx.toJSON();
+		try{
+			let tx = await Mina.transaction({ sender, fee: 10_000_000 }, () => {
+				poll.castVote(Field.from(vote));
+			});
+			await tx.prove();
+			return tx.toJSON();
+		} catch {
+			return {};
+		}
 	}
 
 	async proveTransaction() {
@@ -156,19 +160,19 @@ export default class ZkappClient {
 	status() {
 		return {
 			hasBeenSetup: this.hasBeenSetup,
-			instnaces: Object.keys(this.instnaces)
+			instances: Object.keys(this.instances)
 		}
 	}
 
 	hasBeenSetup: boolean;
 	Poll: null | typeof Poll;
-	instnaces: Record<string, Poll>
+	instances: Record<string, Poll>
 	transaction: null | Transaction;
 
 	constructor() {
 		this.hasBeenSetup = false;
 		this.Poll = Poll;
-		this.instnaces = {};
+		this.instances = {};
 		this.transaction = null;
 	}
 }

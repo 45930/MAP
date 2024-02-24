@@ -1,7 +1,8 @@
-import { method } from 'o1js';
 import { writable } from 'svelte/store';
 
 class ZkappClient {
+	account: any;
+	connected: boolean;
 	apiHost: string;
 	hasBeenSetup: boolean;
 	instances: Array<string>;
@@ -26,17 +27,27 @@ class ZkappClient {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
+				sender: this.account[0],
 				votes
 			})
 		});
 		return await resp.json();
 	}
 
+	async connect() {
+		if (!this.connected) {
+			const account = await (window as any).mina.requestAccounts().catch((err: any) => err);
+
+			console.log(account);
+			this.connected = true;
+			this.account = account;
+		}
+	}
+
 	async sendTransaction(transactionJSON: any, transactionFee: number) {
 		const { hash } = await (window as any).mina.sendTransaction({
-			transaction: transactionJSON,
+			transaction: JSON.stringify(transactionJSON),
 			feePayer: {
-				fee: transactionFee,
 				memo: ''
 			}
 		});
@@ -44,6 +55,7 @@ class ZkappClient {
 	}
 
 	constructor() {
+		this.connected = false;
 		this.hasBeenSetup = false;
 		this.instances = [];
 		this.apiHost = 'http://127.0.0.1:5433';

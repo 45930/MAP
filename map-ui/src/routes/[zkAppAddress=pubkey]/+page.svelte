@@ -20,6 +20,7 @@
 	let content: IIpfsPollData | undefined;
 
 	let loading = true;
+	let connected = $zkappStore.connected;
 
 	onMount(() => {
 		setup();
@@ -44,6 +45,7 @@
 		const tx = await $zkappStore.vote(zkAppAddress, votes);
 		vote = null;
 		console.log(tx);
+		await $zkappStore.sendTransaction(tx, 0.1);
 	};
 </script>
 
@@ -55,30 +57,39 @@
 			<h2 class="text-xl font-bold">{content.title}</h2>
 			<div>{content.subtitle}</div>
 		</div>
-		<div class="text-lg font-bold mb-2">
-			{#each content.body as body}
-				<div>{body}</div>
-			{/each}
-		</div>
-		<div class="text-left">
-			<form id={formId} on:submit={handleSubmit}>
-				{#each content.options as opt, idx}
-					<div>
-						<label>
-							<input
-								id={`opt-${idx}`}
-								name={`opt-${idx}`}
-								value={idx}
-								bind:group={vote}
-								type="radio"
-							/>
-							{opt}
-						</label>
-					</div>
+		{#if connected}
+			<div class="text-lg font-bold mb-2">
+				{#each content.body as body}
+					<div>{body}</div>
 				{/each}
-				<button type="submit">Submit your vote!</button>
-			</form>
-		</div>
+			</div>
+			<div class="text-left">
+				<form id={formId} on:submit={handleSubmit}>
+					{#each content.options as opt, idx}
+						<div>
+							<label>
+								<input
+									id={`opt-${idx}`}
+									name={`opt-${idx}`}
+									value={idx}
+									bind:group={vote}
+									type="radio"
+								/>
+								{opt}
+							</label>
+						</div>
+					{/each}
+					<button type="submit">Submit your vote!</button>
+				</form>
+			</div>
+		{:else}
+			<button
+				on:click={async () => {
+					await $zkappStore.connect();
+					connected = $zkappStore.connected;
+				}}>Connect to Wallet</button
+			>
+		{/if}
 	</div>
 {:else}
 	<div>Oops!</div>

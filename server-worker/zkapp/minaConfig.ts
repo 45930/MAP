@@ -1,7 +1,10 @@
 import { Mina } from 'o1js';
 
 export const BERKELEY_CONFIG = {
-	mina: 'https://proxy.berkeley.minaexplorer.com/graphql'
+	mina: [
+    'https://berkeley.minascan.io/graphql',
+    'https://proxy.berkeley.minaexplorer.com/graphql',
+  ],
 };
 
 export const LIGHTNET_CONFIG = {
@@ -12,4 +15,4 @@ export const LIGHTNET_CONFIG = {
 
 export const LOCAL_BLOCKCHAIN = Mina.LocalBlockchain({ proofsEnabled: false });
 
-export const networkConfig = LIGHTNET_CONFIG;
+export const networkConfig = BERKELEY_CONFIG;
